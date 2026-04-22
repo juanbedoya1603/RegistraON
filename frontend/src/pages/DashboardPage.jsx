@@ -3,7 +3,7 @@ import {
     Scan, Trophy, LogOut, CheckCircle2, AlertCircle,
     Clock, Save, X, Search, Keyboard, Barcode
 } from 'lucide-react';
-import Spinner from '../components/Spinner';
+import { api } from '../services/api';
 
 const DashboardPage = ({ cedula, setCedula, setView, showToast }) => {
     const [ean, setEan] = useState('');
@@ -34,17 +34,15 @@ const DashboardPage = ({ cedula, setCedula, setView, showToast }) => {
 
         setIsValidating(true);
         try {
-            const response = await fetch(`http://localhost:8000/api/scan/${ean}`);
-            const data = await response.json();
-
+            const data = await api.scanEan(ean);
             if (data.status === "success" || data.message === "EAN libre") {
                 setShowModal(true);
             } else {
-                showToast(data.message, 'error'); // Muestra el nombre del producto si existe
+                showToast(data.message, 'error');
                 setEan('');
                 returnFocus();
             }
-        } catch {
+        } catch (error) {
             showToast('Error de conexión con el servidor (Backend caído).', 'error');
             setEan('');
             returnFocus();
@@ -88,42 +86,37 @@ const DashboardPage = ({ cedula, setCedula, setView, showToast }) => {
         };
 
         try {
-            const response = await fetch('http://localhost:8000/api/save', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
+            await api.saveProduct(payload);
+            const newEntry = { ean, fullName, time: '+1 MIN', id: Date.now() };
+            setHistory([newEntry, ...history].slice(0, 5));
+            setUserTime(prev => prev + 1);
 
-            if (response.ok) {
-                const newEntry = { ean, fullName, time: '+1 MIN', id: Date.now() };
-                setHistory([newEntry, ...history].slice(0, 5));
-                setUserTime(prev => prev + 1);
+            setShowModal(false);
+            setEan('');
+            setForm({ product: '', brand: '', char: '', value: '', unit: '', sales: 'UND' });
+            showToast('¡Hallazgo guardado en BD! +1 Minuto ganado.', 'success');
 
-                setShowModal(false);
-                setEan('');
-                setForm({ product: '', brand: '', char: '', value: '', unit: '', sales: 'UND' });
-                showToast('¡Hallazgo guardado en BD! +1 Minuto ganado.', 'success');
-
-                // Refetch data
-                const [rankingRes, statsRes] = await Promise.all([
-                    fetch('http://localhost:8000/api/ranking'),
-                    fetch(`http://localhost:8000/api/user-stats/${cedula}`)
-                ]);
-
-                if (rankingRes.ok) setRanking(await rankingRes.json());
-                if (statsRes.ok) {
-                    const statsData = await statsRes.json();
-                    setUserTime(statsData.saldo);
-                    setHistory(statsData.history);
-                }
-            } else {
-                showToast('Error al guardar en base de datos', 'error');
-            }
-        } catch {
-            showToast('Error conectando al servidor', 'error');
+            // Refetch data
+            refreshData();
+        } catch (error) {
+            showToast(error.detail || 'Error al guardar en base de datos', 'error');
         } finally {
             setIsLoading(false);
             returnFocus();
+        }
+    };
+
+    const refreshData = async () => {
+        try {
+            const [rankingData, statsData] = await Promise.all([
+                api.getRanking(),
+                api.getUserStats(cedula)
+            ]);
+            setRanking(rankingData);
+            setUserTime(statsData.saldo);
+            setHistory(statsData.history);
+        } catch (e) {
+            console.error("Error al refrescar datos:", e);
         }
     };
 
@@ -135,22 +128,16 @@ const DashboardPage = ({ cedula, setCedula, setView, showToast }) => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [rankingRes, statsRes, brandsRes] = await Promise.all([
-                    fetch('http://localhost:8000/api/ranking'),
-                    fetch(`http://localhost:8000/api/user-stats/${cedula}`),
-                    fetch('http://localhost:8000/api/brands')
+                const [rankingData, statsData, brandsData] = await Promise.all([
+                    api.getRanking(),
+                    api.getUserStats(cedula),
+                    api.getBrands()
                 ]);
 
-                if (rankingRes.ok) setRanking(await rankingRes.json());
-                if (statsRes.ok) {
-                    const statsData = await statsRes.json();
-                    setUserTime(statsData.saldo);
-                    setHistory(statsData.history);
-                }
-                if (brandsRes.ok) {
-                    const brandsData = await brandsRes.json();
-                    setBrandList(brandsData.brands || []);
-                }
+                setRanking(rankingData);
+                setUserTime(statsData.saldo);
+                setHistory(statsData.history);
+                setBrandList(brandsData.brands || []);
             } catch (error) {
                 console.error("Error fetching data:", error);
             }
@@ -158,7 +145,6 @@ const DashboardPage = ({ cedula, setCedula, setView, showToast }) => {
 
         fetchData();
     }, [cedula]);
-
 
     useEffect(() => {
         if (!showModal) returnFocus();

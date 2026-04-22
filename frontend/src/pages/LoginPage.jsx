@@ -1,7 +1,32 @@
-import React from 'react';
-import Spinner from '../components/Spinner';
+import React, { useState } from 'react';
+import { api } from '../services/api';
 
-const LoginPage = ({ cedula, setCedula, handleLogin, isLoggingIn }) => {
+const LoginPage = ({ cedula, setCedula, onLoginSuccess, showToast }) => {
+    const [isLoggingIn, setIsLoggingIn] = useState(false);
+
+    const handleLogin = async (e) => {
+        e.preventDefault();
+        if (cedula.length < 5) {
+            showToast('Ingrese una cédula válida', 'error');
+            return;
+        }
+
+        setIsLoggingIn(true);
+        try {
+            const data = await api.login(cedula);
+            showToast(`Bienvenido, ${data.user.name}`, 'success');
+            onLoginSuccess(cedula);
+        } catch (error) {
+            if (error.status === 404) {
+                showToast('Cédula no autorizada', 'error');
+            } else {
+                showToast('Error de conexión con el servidor', 'error');
+            }
+        } finally {
+            setIsLoggingIn(false);
+        }
+    };
+
     return (
         <div className="min-h-[100dvh] bg-[#0a0a0a] flex items-center justify-center p-4 relative overflow-hidden">
             <div className="fixed top-0 left-0 w-full h-full pointer-events-none">

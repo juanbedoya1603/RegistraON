@@ -8,37 +8,14 @@ const App = () => {
     const [cedula, setCedula] = useState('');
     const [toast, setToast] = useState({ show: false, message: '', type: 'error' });
 
-    const [isLoggingIn, setIsLoggingIn] = useState(false);
-
     const showToast = (message, type) => {
         setToast({ show: true, message, type });
         setTimeout(() => setToast({ show: false, message: '', type: 'error' }), 3000);
     };
 
-    const handleLogin = async (e) => {
-        e.preventDefault();
-        if (cedula.length < 5) {
-            showToast('Ingrese una cédula válida', 'error');
-            return;
-        }
-
-        setIsLoggingIn(true);
-        try {
-            const response = await fetch(`http://localhost:8000/api/login/${cedula}`);
-            if (response.ok) {
-                const data = await response.json();
-                showToast(`Bienvenido, ${data.user.name}`, 'success');
-                setView('dashboard');
-            } else if (response.status === 404) {
-                showToast('Cédula no autorizada', 'error');
-            } else {
-                showToast('Acceso denegado', 'error');
-            }
-        } catch {
-            showToast('Error de conexión con el servidor', 'error');
-        } finally {
-            setIsLoggingIn(false);
-        }
+    const onLoginSuccess = (userCedula) => {
+        setCedula(userCedula);
+        setView('dashboard');
     };
 
     return (
@@ -47,8 +24,8 @@ const App = () => {
                 <LoginPage 
                     cedula={cedula} 
                     setCedula={setCedula} 
-                    handleLogin={handleLogin}
-                    isLoggingIn={isLoggingIn}
+                    onLoginSuccess={onLoginSuccess}
+                    showToast={showToast}
                 />
             ) : (
                 <DashboardPage 
