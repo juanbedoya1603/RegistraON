@@ -1,7 +1,9 @@
-# Entornos virtuales de Python
+# Entornos virtuales de Python y Cache
 backend/venv/
-backend/__pycache__/
-backend/*.pyc
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
 
 # Dependencias de Node
 frontend/node_modules/

@@ -178,10 +178,21 @@ const DashboardPage = ({ cedula, setCedula, setView, showToast }) => {
                 <div className="flex-1 flex flex-col items-center justify-center p-4 lg:p-6 z-10 min-h-[40dvh] lg:min-h-0">
                     <div className="w-full max-w-xl text-center">
                         <div className="mb-6 lg:mb-8 relative flex flex-col items-center">
-                            <div className="relative flex items-center justify-center w-16 h-16 lg:w-20 lg:h-20 mb-4 group">
-                                <div className="absolute inset-0 border border-[#4a4948]/30 rounded-2xl transform rotate-45 animate-[spin_4s_linear_infinite]"></div>
-                                <div className="absolute inset-1.5 border border-dashed border-[#4a4948]/40 rounded-xl"></div>
-                                <Barcode className="text-[#42a636] relative z-10 drop-shadow-[0_0_8px_rgba(66,166,54,0.3)]" size={36} />
+                            <div className="relative flex items-center justify-center w-20 h-20 lg:w-24 lg:h-24 mb-6">
+                                {/* Fondo suave y marco de cristal */}
+                                <div className="absolute inset-0 bg-[#42a636]/5 rounded-xl border border-[#4a4948]/20 backdrop-blur-sm"></div>
+                                
+                                {/* Esquinas de mira del escáner (Sniper corners) */}
+                                <div className="absolute top-0 left-0 w-5 h-5 border-t-2 border-l-2 border-[#42a636] rounded-tl-xl"></div>
+                                <div className="absolute top-0 right-0 w-5 h-5 border-t-2 border-r-2 border-[#42a636] rounded-tr-xl"></div>
+                                <div className="absolute bottom-0 left-0 w-5 h-5 border-b-2 border-l-2 border-[#42a636] rounded-bl-xl"></div>
+                                <div className="absolute bottom-0 right-0 w-5 h-5 border-b-2 border-r-2 border-[#42a636] rounded-br-xl"></div>
+
+                                {/* Línea Láser Animada */}
+                                <div className="absolute w-[70%] h-[2px] bg-[#02ad02] shadow-[0_0_12px_3px_rgba(2,173,2,0.8)] z-20 animate-scan rounded-full"></div>
+
+                                {/* Icono de Código de Barras base */}
+                                <Barcode className="text-[#5a5e62] relative z-10 opacity-70" size={48} strokeWidth={1} />
                             </div>
                             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white mb-1 uppercase">Escanea Producto</h2>
                             <p className="text-[10px] sm:text-xs text-[#5a5e62] font-medium uppercase tracking-widest">Láser o Teclado</p>
