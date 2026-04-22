@@ -40,12 +40,10 @@ const DashboardPage = ({ cedula, setCedula, setView, showToast }) => {
             } else {
                 showToast(data.message, 'error');
                 setEan('');
-                returnFocus();
             }
         } catch (error) {
             showToast('Error de conexión con el servidor (Backend caído).', 'error');
             setEan('');
-            returnFocus();
         } finally {
             setIsValidating(false);
         }
@@ -147,8 +145,13 @@ const DashboardPage = ({ cedula, setCedula, setView, showToast }) => {
     }, [cedula]);
 
     useEffect(() => {
-        if (!showModal) returnFocus();
-    }, [showModal]);
+        if (!isValidating && !showModal) {
+            const timer = setTimeout(() => {
+                if (scannerRef.current) scannerRef.current.focus();
+            }, 100);
+            return () => clearTimeout(timer);
+        }
+    }, [isValidating, showModal]);
 
 
     return (
@@ -176,7 +179,7 @@ const DashboardPage = ({ cedula, setCedula, setView, showToast }) => {
                     <div className="w-full max-w-xl text-center">
                         <div className="mb-6 lg:mb-8 relative flex flex-col items-center">
                             <div className="relative flex items-center justify-center w-16 h-16 lg:w-20 lg:h-20 mb-4 group">
-                                <div className="absolute inset-0 border border-[#4a4948]/30 rounded-2xl transform rotate-45 transition-transform duration-700 group-hover:rotate-90"></div>
+                                <div className="absolute inset-0 border border-[#4a4948]/30 rounded-2xl transform rotate-45 animate-[spin_4s_linear_infinite]"></div>
                                 <div className="absolute inset-1.5 border border-dashed border-[#4a4948]/40 rounded-xl"></div>
                                 <Barcode className="text-[#42a636] relative z-10 drop-shadow-[0_0_8px_rgba(66,166,54,0.3)]" size={36} />
                             </div>

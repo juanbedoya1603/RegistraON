@@ -13,3 +13,10 @@ def get_connection():
         f"PWD={os.getenv('SQL_PASS')};"
     )
     return pyodbc.connect(conn_str)
+
+def get_db():
+    conn = get_connection()
+    try:
+        yield conn
+    finally:
+        conn.close()

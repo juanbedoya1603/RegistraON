@@ -4,7 +4,8 @@ export const api = {
     login: async (cedula) => {
         const response = await fetch(`${BASE_URL}/login/${cedula}`);
         if (!response.ok) {
-            throw { status: response.status, message: 'Error en login' };
+            const errorData = await response.json().catch(() => ({}));
+            throw { status: response.status, message: errorData.detail || 'Error en login' };
         }
         return await response.json();
     },
@@ -12,7 +13,8 @@ export const api = {
     scanEan: async (ean) => {
         const response = await fetch(`${BASE_URL}/scan/${ean}`);
         if (!response.ok) {
-            throw new Error('Error en conexión con el servidor');
+            const errorData = await response.json().catch(() => ({}));
+            throw { status: response.status, message: errorData.detail || 'Error en conexión con el servidor' };
         }
         return await response.json();
     },
@@ -25,26 +27,35 @@ export const api = {
         });
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
-            throw { status: response.status, detail: errorData.detail || 'Error al guardar' };
+            throw { status: response.status, message: errorData.detail || 'Error al guardar' };
         }
         return await response.json();
     },
 
     getRanking: async () => {
         const response = await fetch(`${BASE_URL}/ranking`);
-        if (!response.ok) throw new Error('Error al obtener ranking');
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw { status: response.status, message: errorData.detail || 'Error al obtener ranking' };
+        }
         return await response.json();
     },
 
     getUserStats: async (cedula) => {
         const response = await fetch(`${BASE_URL}/user-stats/${cedula}`);
-        if (!response.ok) throw new Error('Error al obtener estadísticas');
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw { status: response.status, message: errorData.detail || 'Error al obtener estadísticas' };
+        }
         return await response.json();
     },
 
     getBrands: async () => {
         const response = await fetch(`${BASE_URL}/brands`);
-        if (!response.ok) throw new Error('Error al obtener marcas');
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw { status: response.status, message: errorData.detail || 'Error al obtener marcas' };
+        }
         return await response.json();
     }
 };
