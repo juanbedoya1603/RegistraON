@@ -63,5 +63,11 @@ export const api = {
         const response = await fetch(`${BASE_URL}/base-products`);
         if (!response.ok) throw new Error('Error al obtener productos base');
         return await response.json();
+    },
+
+    getNoMeasureProducts: async () => {
+        const response = await fetch(`${BASE_URL}/config/no-measure-products`);
+        if (!response.ok) throw new Error('Error al obtener excepciones');
+        return await response.json();
     }
 };

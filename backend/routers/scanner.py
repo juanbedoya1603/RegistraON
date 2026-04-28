@@ -6,6 +6,8 @@ from infrastructure.repositories import product_repository
 
 router = APIRouter()
 
+NO_MEASURE_PRODUCTS = ["ESCOBA", "TRAPEADOR", "BOMBILLO", "CUADERNO", "VASO", "PLATO"]
+
 @router.get("/scan/{ean}")
 async def scan_ean(
     ean: str = Path(..., description="EAN barcode (5-14 digits)"),
@@ -70,14 +72,13 @@ async def save_product(
         "nmSalesUnit": product.nmSalesUnit.upper()
     }
 
-    # REGLA DE NEGOCIO 4: Quality Guard
-    generic_keywords = ["ARROZ", "LECHE", "ACEITE", "DETERGENTE", "SHAMPOO"]
-    is_generic = any(kw in product_data['nmProduct'] for kw in generic_keywords)
+    # REGLA DE NEGOCIO 4: Quality Guard (Whitelist)
+    is_no_measure = any(kw in product_data['nmProduct'] for kw in NO_MEASURE_PRODUCTS)
 
-    if is_generic and (not product_data['nmContentValue'] or not product_data['nmContentUnit']):
+    if not is_no_measure and (not product_data['nmContentValue'] or not product_data['nmContentUnit']):
         raise HTTPException(
             status_code=400, 
-            detail="QUALITY GUARD: Para productos genéricos el Contenido y Unidad de Medida son obligatorios."
+            detail="QUALITY GUARD: El Contenido y la Unidad son obligatorios para este producto."
         )
     
     # REFUERZO: Validar EAN antes de guardar por seguridad absoluta
@@ -141,6 +142,10 @@ async def get_base_products_endpoint(conn = Depends(get_db)):
     cursor = conn.cursor()
     products = product_repository.get_base_products(cursor)
     return {"status": "success", "products": products}
+
+@router.get("/config/no-measure-products")
+async def get_no_measure_products(conn = Depends(get_db)):
+    return {"status": "success", "products": NO_MEASURE_PRODUCTS}
 
 
 

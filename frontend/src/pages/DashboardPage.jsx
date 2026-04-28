@@ -13,6 +13,7 @@ const DashboardPage = ({ cedula, userName, setCedula, setView, showToast }) => {
     const [ranking, setRanking] = useState([]);
     const [brandList, setBrandList] = useState([]);
     const [productList, setProductList] = useState([]);
+    const [noMeasureProducts, setNoMeasureProducts] = useState([]);
     const [form, setForm] = useState({ product: '', brand: '', char: '', value: '', unit: '', sales: 'UND' });
     const [isLoading, setIsLoading] = useState(false);
     const [isValidating, setIsValidating] = useState(false);
@@ -71,11 +72,9 @@ const DashboardPage = ({ cedula, userName, setCedula, setView, showToast }) => {
             return;
         }
 
-        const genericKeywords = ["ARROZ", "LECHE", "ACEITE", "DETERGENTE", "SHAMPOO"];
-        const isGeneric = genericKeywords.some(keyword => form.product.toUpperCase().includes(keyword));
-
-        if (isGeneric && (!form.value || !form.unit)) {
-            showToast('Para productos genéricos, el Contenido y la Unidad de Medida son OBLIGATORIOS.', 'error');
+        const isNoMeasure = noMeasureProducts.some(keyword => form.product.toUpperCase().includes(keyword));
+        if (!isNoMeasure && (!form.value || !form.unit)) {
+            showToast('El Contenido y la Unidad de Medida son OBLIGATORIOS.', 'error');
             return;
         }
 
@@ -137,11 +136,12 @@ const DashboardPage = ({ cedula, userName, setCedula, setView, showToast }) => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [rankingData, statsData, brandsData, productsData] = await Promise.all([
+                const [rankingData, statsData, brandsData, productsData, exceptionsData] = await Promise.all([
                     api.getRanking(),
                     api.getUserStats(cedula),
                     api.getBrands(),
-                    api.getBaseProducts()
+                    api.getBaseProducts(),
+                    api.getNoMeasureProducts()
                 ]);
 
                 setRanking(rankingData);
@@ -149,6 +149,7 @@ const DashboardPage = ({ cedula, userName, setCedula, setView, showToast }) => {
                 setHistory(statsData.history);
                 setBrandList(brandsData.brands || []);
                 setProductList(productsData.products || []);
+                setNoMeasureProducts(exceptionsData.products || []);
             } catch (error) {
                 console.error("Error fetching data:", error);
             }
@@ -167,10 +168,11 @@ const DashboardPage = ({ cedula, userName, setCedula, setView, showToast }) => {
     }, [isValidating, showModal]);
 
 
-    // Filtro de rendimiento: Solo renderizar coincidencia tras 2 caracteres (max 50)
     const filteredProducts = form.product.length >= 2 
         ? productList.filter(p => p.toUpperCase().includes(form.product.toUpperCase())).slice(0, 50)
         : [];
+
+    const isNoMeasure = noMeasureProducts.some(kw => form.product.toUpperCase().includes(kw));
 
     return (
         <div className="min-h-[100dvh] lg:h-[100dvh] w-full bg-[#0a0a0a] text-slate-200 flex flex-col lg:flex-row overflow-x-hidden lg:overflow-hidden">
@@ -399,18 +401,20 @@ const DashboardPage = ({ cedula, userName, setCedula, setView, showToast }) => {
                                 </div>
                                 <div className="bg-[#0a0a0a] p-3 rounded-xl border border-[#4a4948]/40 flex gap-3">
                                     <div className="w-1/2">
-                                        <label className="block text-[9px] font-bold text-[#5a5e62] uppercase mb-1">Contenido (Numérico)</label>
+                                        <label className="block text-[9px] font-bold text-[#5a5e62] uppercase mb-1">Contenido {isNoMeasure ? '(No Aplica)' : '*'}</label>
                                         <input
                                             type="number" value={form.value} onChange={(e) => setForm({ ...form, value: e.target.value })}
-                                            placeholder="Ej. 500"
-                                            className="w-full bg-[#1a1a1a] border border-[#4a4948] rounded-md p-2 text-white placeholder-[#5a5e62]/60 focus:outline-none focus:border-[#42a636] text-center text-xs transition-colors"
+                                            placeholder={isNoMeasure ? "N/A" : "Ej. 500"}
+                                            disabled={isNoMeasure}
+                                            className={`w-full bg-[#1a1a1a] border border-[#4a4948] rounded-md p-2 text-white placeholder-[#5a5e62]/60 focus:outline-none focus:border-[#42a636] text-center text-xs transition-colors ${isNoMeasure ? 'opacity-30 cursor-not-allowed' : ''}`}
                                         />
                                     </div>
                                     <div className="w-1/2">
-                                        <label className="block text-[9px] font-bold text-[#5a5e62] uppercase mb-1">Unidad Medida</label>
+                                        <label className="block text-[9px] font-bold text-[#5a5e62] uppercase mb-1">Unidad Medida {isNoMeasure ? '' : '*'}</label>
                                         <select
                                             value={form.unit} onChange={(e) => setForm({ ...form, unit: e.target.value })}
-                                            className="w-full bg-[#1a1a1a] border border-[#4a4948] rounded-md p-2 text-white focus:outline-none focus:border-[#42a636] text-xs font-bold transition-colors cursor-pointer"
+                                            disabled={isNoMeasure}
+                                            className={`w-full bg-[#1a1a1a] border border-[#4a4948] rounded-md p-2 text-white focus:outline-none focus:border-[#42a636] text-xs font-bold transition-colors cursor-pointer ${isNoMeasure ? 'opacity-30 cursor-not-allowed' : ''}`}
                                         >
                                             <option value="">N/A</option>
                                             <option value="GR">GR</option>
