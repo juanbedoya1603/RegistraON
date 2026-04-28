@@ -5,7 +5,6 @@ from routers import scanner
 app = FastAPI(title="RegistraON API")
 
 
-
 # Configuración del guardia de fronteras (CORS)
 origins = [
     "http://localhost:5173",

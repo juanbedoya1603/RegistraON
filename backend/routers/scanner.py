@@ -47,8 +47,7 @@ async def login(
     return {
         "status": "success",
         "user": {
-            "name": user_row[0],
-            "lastName": user_row[1]
+            "name": user_row[0]
         }
     }
 
@@ -70,6 +69,16 @@ async def save_product(
         "nmContentUnit": product.nmContentUnit.upper(),
         "nmSalesUnit": product.nmSalesUnit.upper()
     }
+
+    # REGLA DE NEGOCIO 4: Quality Guard
+    generic_keywords = ["ARROZ", "LECHE", "ACEITE", "DETERGENTE", "SHAMPOO"]
+    is_generic = any(kw in product_data['nmProduct'] for kw in generic_keywords)
+
+    if is_generic and (not product_data['nmContentValue'] or not product_data['nmContentUnit']):
+        raise HTTPException(
+            status_code=400, 
+            detail="QUALITY GUARD: Para productos genéricos el Contenido y Unidad de Medida son obligatorios."
+        )
     
     # REFUERZO: Validar EAN antes de guardar por seguridad absoluta
     block_message = product_repository.validate_ean_is_free(cursor, product_data['ean'])

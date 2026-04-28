@@ -14,7 +14,6 @@ class ProductSaveRequest(BaseModel):
 
 class UserResponse(BaseModel):
     name: str
-    lastName: str
 
 class LoginResponse(BaseModel):
     status: str

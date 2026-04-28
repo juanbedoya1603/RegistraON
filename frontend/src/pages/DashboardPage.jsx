@@ -38,7 +38,7 @@ const DashboardPage = ({ cedula, setCedula, setView, showToast }) => {
             if (data.status === "success" || data.message === "EAN libre") {
                 setShowModal(true);
             } else {
-                showToast(data.message, 'error');
+                showToast(data.message, 'error', 10000);
                 setEan('');
             }
         } catch (error) {
@@ -66,6 +66,14 @@ const DashboardPage = ({ cedula, setCedula, setView, showToast }) => {
     const handleSave = async () => {
         if (!form.product || !form.brand) {
             showToast('Producto y Marca son obligatorios', 'error');
+            return;
+        }
+
+        const genericKeywords = ["ARROZ", "LECHE", "ACEITE", "DETERGENTE", "SHAMPOO"];
+        const isGeneric = genericKeywords.some(keyword => form.product.toUpperCase().includes(keyword));
+
+        if (isGeneric && (!form.value || !form.unit)) {
+            showToast('Para productos genéricos, el Contenido y la Unidad de Medida son OBLIGATORIOS.', 'error');
             return;
         }
 

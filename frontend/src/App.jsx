@@ -8,9 +8,9 @@ const App = () => {
     const [cedula, setCedula] = useState('');
     const [toast, setToast] = useState({ show: false, message: '', type: 'error' });
 
-    const showToast = (message, type) => {
+    const showToast = (message, type, duration = 3000) => {
         setToast({ show: true, message, type });
-        setTimeout(() => setToast({ show: false, message: '', type: 'error' }), 3000);
+        setTimeout(() => setToast({ show: false, message: '', type: 'error' }), duration);
     };
 
     const onLoginSuccess = (userCedula) => {
