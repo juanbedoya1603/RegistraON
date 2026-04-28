@@ -136,5 +136,11 @@ async def get_brands(conn = Depends(get_db)):
     brands = product_repository.get_all_brands(cursor)
     return {"status": "success", "brands": brands}
 
+@router.get("/base-products")
+async def get_base_products_endpoint(conn = Depends(get_db)):
+    cursor = conn.cursor()
+    products = product_repository.get_base_products(cursor)
+    return {"status": "success", "products": products}
+
 
 

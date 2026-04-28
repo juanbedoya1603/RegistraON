@@ -15,7 +15,7 @@ const LoginPage = ({ cedula, setCedula, onLoginSuccess, showToast }) => {
         try {
             const data = await api.login(cedula);
             showToast(`Bienvenido, ${data.user.name}`, 'success');
-            onLoginSuccess(cedula);
+            onLoginSuccess(cedula, data.user.name);
         } catch (error) {
             if (error.status === 404) {
                 showToast('Cédula no autorizada', 'error');

@@ -6,6 +6,7 @@ import DashboardPage from './pages/DashboardPage';
 const App = () => {
     const [view, setView] = useState('login');
     const [cedula, setCedula] = useState('');
+    const [userName, setUserName] = useState('');
     const [toast, setToast] = useState({ show: false, message: '', type: 'error' });
 
     const showToast = (message, type, duration = 3000) => {
@@ -13,8 +14,9 @@ const App = () => {
         setTimeout(() => setToast({ show: false, message: '', type: 'error' }), duration);
     };
 
-    const onLoginSuccess = (userCedula) => {
+    const onLoginSuccess = (userCedula, name) => {
         setCedula(userCedula);
+        setUserName(name);
         setView('dashboard');
     };
 
@@ -30,6 +32,7 @@ const App = () => {
             ) : (
                 <DashboardPage 
                     cedula={cedula} 
+                    userName={userName}
                     setCedula={setCedula}
                     setView={setView} 
                     showToast={showToast} 

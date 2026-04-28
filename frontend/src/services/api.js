@@ -57,5 +57,11 @@ export const api = {
             throw { status: response.status, message: errorData.detail || 'Error al obtener marcas' };
         }
         return await response.json();
+    },
+
+    getBaseProducts: async () => {
+        const response = await fetch(`${BASE_URL}/base-products`);
+        if (!response.ok) throw new Error('Error al obtener productos base');
+        return await response.json();
     }
 };

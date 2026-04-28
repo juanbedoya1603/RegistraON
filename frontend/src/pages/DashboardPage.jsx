@@ -1,20 +1,22 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
     Scan, Trophy, LogOut, CheckCircle2, AlertCircle,
-    Clock, Save, X, Search, Keyboard, Barcode
+    Clock, Save, X, Search, Keyboard, Barcode, HelpCircle
 } from 'lucide-react';
 import { api } from '../services/api';
 
-const DashboardPage = ({ cedula, setCedula, setView, showToast }) => {
+const DashboardPage = ({ cedula, userName, setCedula, setView, showToast }) => {
     const [ean, setEan] = useState('');
     const [showModal, setShowModal] = useState(false);
     const [history, setHistory] = useState([]);
     const [userTime, setUserTime] = useState(0);
     const [ranking, setRanking] = useState([]);
     const [brandList, setBrandList] = useState([]);
+    const [productList, setProductList] = useState([]);
     const [form, setForm] = useState({ product: '', brand: '', char: '', value: '', unit: '', sales: 'UND' });
     const [isLoading, setIsLoading] = useState(false);
     const [isValidating, setIsValidating] = useState(false);
+    const [showGuide, setShowGuide] = useState(false);
     const scannerRef = useRef(null);
 
     const returnFocus = () => {
@@ -98,6 +100,7 @@ const DashboardPage = ({ cedula, setCedula, setView, showToast }) => {
             setUserTime(prev => prev + 1);
 
             setShowModal(false);
+            setShowGuide(false);
             setEan('');
             setForm({ product: '', brand: '', char: '', value: '', unit: '', sales: 'UND' });
             showToast('¡Hallazgo guardado en BD! +1 Minuto ganado.', 'success');
@@ -134,16 +137,18 @@ const DashboardPage = ({ cedula, setCedula, setView, showToast }) => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [rankingData, statsData, brandsData] = await Promise.all([
+                const [rankingData, statsData, brandsData, productsData] = await Promise.all([
                     api.getRanking(),
                     api.getUserStats(cedula),
-                    api.getBrands()
+                    api.getBrands(),
+                    api.getBaseProducts()
                 ]);
 
                 setRanking(rankingData);
                 setUserTime(statsData.saldo);
                 setHistory(statsData.history);
                 setBrandList(brandsData.brands || []);
+                setProductList(productsData.products || []);
             } catch (error) {
                 console.error("Error fetching data:", error);
             }
@@ -162,6 +167,11 @@ const DashboardPage = ({ cedula, setCedula, setView, showToast }) => {
     }, [isValidating, showModal]);
 
 
+    // Filtro de rendimiento: Solo renderizar coincidencia tras 2 caracteres (max 50)
+    const filteredProducts = form.product.length >= 2 
+        ? productList.filter(p => p.toUpperCase().includes(form.product.toUpperCase())).slice(0, 50)
+        : [];
+
     return (
         <div className="min-h-[100dvh] lg:h-[100dvh] w-full bg-[#0a0a0a] text-slate-200 flex flex-col lg:flex-row overflow-x-hidden lg:overflow-hidden">
             {/* AREA CENTRAL: ESCÁNER */}
@@ -177,6 +187,15 @@ const DashboardPage = ({ cedula, setCedula, setView, showToast }) => {
                             Registra<span className="text-[#42a636]">ON</span>
                         </h1>
                     </div>
+
+                    <div className="absolute left-1/2 -translate-x-1/2 hidden md:flex items-center gap-2">
+                        <div className="h-1.5 w-1.5 rounded-full bg-[#42a636]"></div>
+                        <span className="text-[10px] lg:text-xs font-black text-slate-300 uppercase tracking-[0.3em]">
+                            {userName}
+                        </span>
+                        <div className="h-1.5 w-1.5 rounded-full bg-[#42a636]"></div>
+                    </div>
+
                     <div className="flex items-center gap-1.5 bg-[#42a636]/10 px-3 py-1.5 rounded-full border border-[#42a636]/30">
                         <div className="w-1.5 h-1.5 rounded-full bg-[#02ad02]"></div>
                         <span className="text-[9px] sm:text-[10px] font-bold text-[#42a636] uppercase tracking-widest">Activo</span>
@@ -312,40 +331,63 @@ const DashboardPage = ({ cedula, setCedula, setView, showToast }) => {
             {/* MODAL (GLOBAL) */}
             {showModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-[#0a0a0a]/90 backdrop-blur-sm">
-                    <div className="bg-[#1a1a1a] border border-[#4a4948] rounded-2xl w-full max-w-3xl overflow-hidden shadow-2xl flex flex-col max-h-[95vh] lg:max-h-[90vh]">
+                    <div className={`bg-[#1a1a1a] border border-[#4a4948] rounded-2xl w-full ${showGuide ? 'max-w-5xl' : 'max-w-3xl'} overflow-hidden shadow-2xl flex flex-col max-h-[95vh] lg:max-h-[90vh] relative transition-all duration-300`}>
                         <div className="bg-gradient-to-r from-[#42a636] to-[#02ad02] p-4 flex justify-between items-center shrink-0">
                             <div>
                                 <h2 className="text-lg lg:text-xl font-black text-white flex items-center gap-2"><CheckCircle2 size={20} /> Hallazgo Detectado</h2>
                                 <p className="text-white/90 text-[10px] lg:text-xs font-medium mt-0.5">EAN: <span className="font-mono bg-black/20 px-1.5 rounded">{ean}</span></p>
                             </div>
-                            <button onClick={() => setShowModal(false)} className="bg-black/20 hover:bg-black/40 text-white p-1.5 rounded-full transition-colors"><X size={16} /></button>
+                            <div className="flex items-center gap-2">
+                                <button onClick={() => setShowGuide(!showGuide)} className="bg-black/20 hover:bg-black/40 text-white px-3 py-1.5 rounded-lg transition-colors text-[10px] lg:text-xs font-bold flex items-center gap-1.5">
+                                    <HelpCircle size={16} /> {showGuide ? 'Ocultar Guía' : 'Ver Guía'}
+                                </button>
+                                <button onClick={() => { setShowModal(false); setShowGuide(false); }} className="bg-black/20 hover:bg-black/40 text-white p-1.5 rounded-lg transition-colors"><X size={16} /></button>
+                            </div>
                         </div>
 
-                        <div className="p-4 lg:p-6 overflow-y-auto custom-scrollbar flex-1">
+                        <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
+                            {/* Columna Izquierda: Formulario */}
+                            <div className="p-4 lg:p-6 overflow-y-auto custom-scrollbar flex-1">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-[9px] lg:text-[10px] font-bold text-[#5a5e62] uppercase mb-1.5">Producto Base *</label>
-                                    <input
-                                        autoFocus type="text" value={form.product} onChange={(e) => setForm({ ...form, product: e.target.value })}
-                                        placeholder="Ej. ARROZ"
-                                        className="w-full bg-[#0a0a0a] border border-[#4a4948] rounded-lg p-2.5 lg:p-3 text-white uppercase placeholder-[#5a5e62]/60 focus:outline-none focus:border-[#42a636] text-xs lg:text-sm transition-colors"
-                                    />
+                                    <div className="relative">
+                                        <input
+                                            autoFocus 
+                                            type="text" 
+                                            value={form.product} 
+                                            onChange={(e) => setForm({ ...form, product: e.target.value })}
+                                            placeholder="Ej. ARROZ"
+                                            list={form.product.length >= 2 ? "products-base-list" : undefined}
+                                            className="w-full bg-[#0a0a0a] border border-[#4a4948] rounded-lg p-2.5 lg:p-3 text-white uppercase placeholder-[#5a5e62]/60 focus:outline-none focus:border-[#42a636] text-xs lg:text-sm transition-colors pr-10"
+                                        />
+                                        {form.product.length >= 2 && (
+                                            <datalist id="products-base-list">
+                                                {filteredProducts.map((prod, index) => (
+                                                    <option key={index} value={prod} />
+                                                ))}
+                                            </datalist>
+                                        )}
+                                        <Search className="absolute right-3 top-[10px] lg:top-[12px] text-[#5a5e62]" size={16} />
+                                    </div>
                                 </div>
                                 <div className="relative">
                                     <label className="block text-[9px] lg:text-[10px] font-bold text-[#5a5e62] uppercase mb-1.5">Marca *</label>
                                     <input
                                         type="text" value={form.brand} onChange={(e) => setForm({ ...form, brand: e.target.value })}
                                         placeholder="Ej. DIANA"
-                                        list="brands-list"
+                                        list={form.brand.length >= 2 ? "brands-list" : undefined}
                                         className="w-full bg-[#0a0a0a] border border-[#4a4948] rounded-lg p-2.5 lg:p-3 text-white uppercase placeholder-[#5a5e62]/60 focus:outline-none focus:border-[#42a636] text-xs lg:text-sm pr-10 transition-colors"
                                     />
-                                    <datalist id="brands-list">
-                                        {brandList.map((brand, index) => (
-                                            <option key={index} value={brand} />
-                                        ))}
-                                    </datalist>
+                                    {/* Renderizado condicional: Solo existe en el DOM si hay 2+ letras */}
+                                    {form.brand.length >= 2 && (
+                                        <datalist id="brands-list">
+                                            {brandList.map((brand, index) => (
+                                                <option key={index} value={brand} />
+                                            ))}
+                                        </datalist>
+                                    )}
                                     <Search className="absolute right-3 top-[32px] lg:top-[36px] text-[#5a5e62]" size={16} />
-
                                 </div>
                                 <div className="md:col-span-2">
                                     <label className="block text-[9px] lg:text-[10px] font-bold text-[#5a5e62] uppercase mb-1.5">Característica / Sabor / Variedad</label>
@@ -391,6 +433,7 @@ const DashboardPage = ({ cedula, setCedula, setView, showToast }) => {
                                 </div>
                             </div>
 
+
                             <div className="mt-5 bg-[#0a0a0a] p-3 lg:p-4 rounded-xl border border-[#42a636]/40 shadow-inner relative overflow-hidden">
                                 <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#42a636]"></div>
                                 <span className="text-[9px] font-black text-[#42a636] uppercase tracking-widest block mb-1 pl-2">Previsualización Mnemotecnia</span>
@@ -400,9 +443,43 @@ const DashboardPage = ({ cedula, setCedula, setView, showToast }) => {
                             </div>
                         </div>
 
+                        {/* Columna Derecha: Guía Detallada */}
+                        {showGuide && (
+                            <div className="w-full md:w-[340px] lg:w-[400px] bg-[#050505] md:border-l border-t md:border-t-0 border-[#4a4948]/50 p-5 lg:p-6 overflow-y-auto custom-scrollbar shrink-0 animate-in slide-in-from-right-8 fade-in duration-300">
+                                <div className="flex items-center gap-2 mb-4 border-b border-[#4a4948]/50 pb-3">
+                                    <div className="p-1.5 bg-[#42a636]/20 rounded-lg"><HelpCircle size={18} className="text-[#42a636]" /></div>
+                                    <h3 className="font-black text-white uppercase tracking-wider text-xs lg:text-sm">Manual de Estandarización</h3>
+                                </div>
+                                
+                                <div className="space-y-4 text-[10px] lg:text-xs text-slate-300">
+                                    <div>
+                                        <strong className="text-white block mb-0.5">1. Producto Base</strong>
+                                        <p>Nombre genérico del artículo. Úsalo en singular y sin adjetivos. <br/>✅ Ej: <span className="text-[#42a636] font-mono bg-[#42a636]/10 px-1 rounded">ARROZ</span>, <span className="text-[#42a636] font-mono bg-[#42a636]/10 px-1 rounded">LECHE</span>. Evita incluir marcas aquí.</p>
+                                    </div>
+                                    <div>
+                                        <strong className="text-white block mb-0.5">2. Marca</strong>
+                                        <p>El fabricante principal. Usa el autocompletado si está disponible. <br/>✅ Ej: <span className="text-[#42a636] font-mono bg-[#42a636]/10 px-1 rounded">DIANA</span>.</p>
+                                    </div>
+                                    <div>
+                                        <strong className="text-white block mb-0.5">3. Característica (Opcional)</strong>
+                                        <p>Sabor, color o variedad especial. <br/>✅ Ej: <span className="text-[#42a636] font-mono bg-[#42a636]/10 px-1 rounded">INTEGRAL</span>, <span className="text-[#42a636] font-mono bg-[#42a636]/10 px-1 rounded">ZERO LIMON</span>. Déjalo vacío si es el producto estándar.</p>
+                                    </div>
+                                    <div className="bg-[#42a636]/10 border border-[#42a636]/30 p-2.5 rounded-lg">
+                                        <strong className="text-[#42a636] block mb-0.5">4. Contenido y Unidad</strong>
+                                        <p className="text-white/90">Extrae el número exacto del empaque (Ej. 500) y su escala (GR, ML). <strong className="text-[#02ad02]">Obligatorio</strong> si el Producto Base es genérico.</p>
+                                    </div>
+                                    <div>
+                                        <strong className="text-white block mb-0.5">5. Unidad de Venta</strong>
+                                        <p>Cómo se factura en caja: <span className="text-white font-mono">UND</span> (Individual), <span className="text-white font-mono">CAJA</span> o <span className="text-white font-mono">PACK</span>.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
                         <div className="p-4 bg-[#0a0a0a] border-t border-[#4a4948]/50 flex justify-end gap-3 shrink-0">
                             <button
-                                onClick={() => setShowModal(false)}
+                                onClick={() => { setShowModal(false); setShowGuide(false); }}
                                 disabled={isLoading}
                                 className="px-4 py-2 rounded-lg text-[#5a5e62] font-bold hover:text-white hover:bg-[#1a1a1a] transition-colors text-[10px] lg:text-xs uppercase tracking-wider disabled:opacity-50"
                             >

@@ -96,3 +96,8 @@ def get_user_recent_history(cursor, cedula: str):
 def get_all_brands(cursor):
     cursor.execute("SELECT brName FROM TryTiendas.InvBrands ORDER BY brName ASC")
     return [row[0] for row in cursor.fetchall() if row[0]]
+
+def get_base_products(cursor):
+    query = "SELECT DISTINCT nmProduct FROM TryTiendas.FixProducts WHERE nmProduct IS NOT NULL ORDER BY nmProduct ASC"
+    cursor.execute(query)
+    return [row[0] for row in cursor.fetchall() if row[0]]
