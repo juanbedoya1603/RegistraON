@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { api } from '../services/api';
+import VideoModal from '../components/dashboard/VideoModal';
 import Header from '../components/dashboard/Header';
 import ScannerSection from '../components/dashboard/ScannerSection';
 import RecentActivity from '../components/dashboard/RecentActivity';
@@ -19,6 +20,7 @@ const DashboardPage = ({ cedula, userName, setCedula, setView, showToast }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [isValidating, setIsValidating] = useState(false);
     const [showGuide, setShowGuide] = useState(false);
+    const [showVideo, setShowVideo] = useState(false);
     const scannerRef = useRef(null);
 
     const returnFocus = () => {
@@ -180,7 +182,7 @@ const DashboardPage = ({ cedula, userName, setCedula, setView, showToast }) => {
             {/* AREA CENTRAL: ESCÁNER */}
             <main className="w-full lg:flex-1 flex flex-col relative order-1 lg:order-2 lg:h-full bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9InJnYmEoOTAsIDk0LCA5OCwgMC4wNykiLz48L3N2Zz4=')]">
                 
-                <Header userName={userName} />
+                <Header userName={userName} setShowVideo={setShowVideo} />
 
                 <ScannerSection 
                     ean={ean} 
@@ -216,6 +218,10 @@ const DashboardPage = ({ cedula, userName, setCedula, setView, showToast }) => {
                     handleSave={handleSave}
                     isLoading={isLoading}
                 />
+            )}
+            {/* MODAL DE VIDEO TUTORIAL */}
+            {showVideo && (
+                <VideoModal setShowVideo={setShowVideo} />
             )}
         </div>
     );

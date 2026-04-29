@@ -1,6 +1,7 @@
 import React from 'react';
+import { PlayCircle } from 'lucide-react';
 
-const Header = ({ userName }) => {
+const Header = ({ userName, setShowVideo }) => {
     return (
         <header className="p-3 sm:p-4 lg:px-6 flex justify-between items-center z-10 border-b border-[#4a4948]/20 bg-[#0a0a0a]/80 backdrop-blur-sm sticky top-0">
             <div className="flex items-center gap-2 sm:gap-3">
@@ -21,10 +22,13 @@ const Header = ({ userName }) => {
                 <div className="h-1.5 w-1.5 rounded-full bg-[#42a636]"></div>
             </div>
 
-            <div className="flex items-center gap-1.5 bg-[#42a636]/10 px-3 py-1.5 rounded-full border border-[#42a636]/30">
-                <div className="w-1.5 h-1.5 rounded-full bg-[#02ad02]"></div>
-                <span className="text-[9px] sm:text-[10px] font-bold text-[#42a636] uppercase tracking-widest">Activo</span>
-            </div>
+            <button 
+                onClick={() => setShowVideo(true)}
+                className="flex items-center gap-1.5 bg-[#42a636]/10 hover:bg-[#42a636]/20 px-3 py-1.5 rounded-full border border-[#42a636]/30 transition-colors cursor-pointer group"
+            >
+                <PlayCircle size={14} className="text-[#42a636] group-hover:scale-110 transition-transform" />
+                <span className="text-[9px] sm:text-[10px] font-bold text-[#42a636] uppercase tracking-widest">Tutorial</span>
+            </button>
         </header>
     );
 };
