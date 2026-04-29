@@ -75,20 +75,18 @@ const ProductModal = ({
                             </div>
                             <div className="bg-[#0a0a0a] p-3 rounded-xl border border-[#4a4948]/40 flex gap-3">
                                 <div className="w-1/2">
-                                    <label className="block text-[9px] font-bold text-[#5a5e62] uppercase mb-1">Contenido {isNoMeasure ? '(No Aplica)' : '*'}</label>
+                                    <label className="block text-[9px] font-bold text-[#5a5e62] uppercase mb-1">Contenido {isNoMeasure ? '(Opcional)' : '*'}</label>
                                     <input
                                         type="number" value={form.value} onChange={(e) => setForm({ ...form, value: e.target.value })}
-                                        placeholder={isNoMeasure ? "N/A" : "Ej. 500"}
-                                        disabled={isNoMeasure}
-                                        className={`w-full bg-[#1a1a1a] border border-[#4a4948] rounded-md p-2 text-white placeholder-[#5a5e62]/60 focus:outline-none focus:border-[#42a636] text-center text-xs transition-colors ${isNoMeasure ? 'opacity-30 cursor-not-allowed' : ''}`}
+                                        placeholder={isNoMeasure ? "Opcional" : "Ej. 500"}
+                                        className="w-full bg-[#1a1a1a] border border-[#4a4948] rounded-md p-2 text-white placeholder-[#5a5e62]/60 focus:outline-none focus:border-[#42a636] text-center text-xs transition-colors"
                                     />
                                 </div>
                                 <div className="w-1/2">
-                                    <label className="block text-[9px] font-bold text-[#5a5e62] uppercase mb-1">Unidad Medida {isNoMeasure ? '' : '*'}</label>
+                                    <label className="block text-[9px] font-bold text-[#5a5e62] uppercase mb-1">Unidad Medida {isNoMeasure ? '(Opcional)' : '*'}</label>
                                     <select
                                         value={form.unit} onChange={(e) => setForm({ ...form, unit: e.target.value })}
-                                        disabled={isNoMeasure}
-                                        className={`w-full bg-[#1a1a1a] border border-[#4a4948] rounded-md p-2 text-white focus:outline-none focus:border-[#42a636] text-xs font-bold transition-colors cursor-pointer ${isNoMeasure ? 'opacity-30 cursor-not-allowed' : ''}`}
+                                        className="w-full bg-[#1a1a1a] border border-[#4a4948] rounded-md p-2 text-white focus:outline-none focus:border-[#42a636] text-xs font-bold transition-colors cursor-pointer"
                                     >
                                         <option value="">N/A</option>
                                         <option value="MG">MG</option>
