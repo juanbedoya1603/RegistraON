@@ -3,10 +3,9 @@ import re
 from database import get_db
 from schemas import ProductSaveRequest
 from infrastructure.repositories import product_repository
+from services import product_service
 
 router = APIRouter()
-
-NO_MEASURE_PRODUCTS = ["ESCOBA", "TRAPEADOR", "BOMBILLO", "CUADERNO", "VASO", "PLATO"]
 
 @router.get("/scan/{ean}")
 async def scan_ean(
@@ -59,38 +58,10 @@ async def save_product(
     conn = Depends(get_db)
 ):
     cursor = conn.cursor()
-    # Regla 3: Convertir todos los campos a MAYÚSCULAS
-    product_data = {
-        "ean": product.ean.upper(),
-        "fullName": product.fullName.upper(),
-        "numDocument": product.numDocument.upper(),
-        "nmProduct": product.nmProduct.upper(),
-        "nmBrand": product.nmBrand.upper(),
-        "nmCharacteristic": product.nmCharacteristic.upper(),
-        "nmContentValue": product.nmContentValue.upper(),
-        "nmContentUnit": product.nmContentUnit.upper(),
-        "nmSalesUnit": product.nmSalesUnit.upper()
-    }
-
-    # REGLA DE NEGOCIO 4: Quality Guard (Whitelist)
-    is_no_measure = any(kw in product_data['nmProduct'] for kw in NO_MEASURE_PRODUCTS)
-
-    if not is_no_measure and (not product_data['nmContentValue'] or not product_data['nmContentUnit']):
-        raise HTTPException(
-            status_code=400, 
-            detail="QUALITY GUARD: El Contenido y la Unidad son obligatorios para este producto."
-        )
-    
-    # REFUERZO: Validar EAN antes de guardar por seguridad absoluta
-    block_message = product_repository.validate_ean_is_free(cursor, product_data['ean'])
-    if block_message:
-        raise HTTPException(status_code=400, detail=block_message)
-        
-    # Guardar usando el repositorio
-    product_repository.save_product(cursor, product_data)
+    # Delegamos la lógica de negocio a la capa de servicios
+    response = product_service.process_and_save_product(cursor, product)
     conn.commit()
-    
-    return {"status": "success", "message": "Producto registrado exitosamente en RegistraON"}
+    return response
 
 @router.get("/ranking")
 async def get_ranking(conn = Depends(get_db)):
@@ -145,7 +116,7 @@ async def get_base_products_endpoint(conn = Depends(get_db)):
 
 @router.get("/config/no-measure-products")
 async def get_no_measure_products(conn = Depends(get_db)):
-    return {"status": "success", "products": NO_MEASURE_PRODUCTS}
+    return {"status": "success", "products": product_service.NO_MEASURE_PRODUCTS}
 
 
 

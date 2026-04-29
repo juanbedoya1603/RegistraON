@@ -91,10 +91,16 @@ const ProductModal = ({
                                         className={`w-full bg-[#1a1a1a] border border-[#4a4948] rounded-md p-2 text-white focus:outline-none focus:border-[#42a636] text-xs font-bold transition-colors cursor-pointer ${isNoMeasure ? 'opacity-30 cursor-not-allowed' : ''}`}
                                     >
                                         <option value="">N/A</option>
+                                        <option value="MG">MG</option>
                                         <option value="GR">GR</option>
                                         <option value="KG">KG</option>
                                         <option value="ML">ML</option>
                                         <option value="LTS">LTS</option>
+                                        <option value="OZ">OZ</option>
+                                        <option value="PULG">PULG</option>
+                                        <option value="CM">CM</option>
+                                        <option value="MTS">MTS</option>
+                                        <option value="UND">UND</option>
                                     </select>
                                 </div>
                             </div>
@@ -104,9 +110,11 @@ const ProductModal = ({
                                     value={form.sales} onChange={(e) => setForm({ ...form, sales: e.target.value })}
                                     className="w-full bg-[#1a1a1a] border border-[#4a4948] rounded-md p-2 text-white focus:outline-none focus:border-[#42a636] text-xs font-bold transition-colors cursor-pointer"
                                 >
-                                    <option value="UND">UNIDAD (UND)</option>
-                                    <option value="CAJA">CAJA (CJ)</option>
-                                    <option value="PACK">PACK (PK)</option>
+                                    <option value="UND">UNIDAD</option>
+                                    <option value="PACK">PACK</option>
+                                    <option value="SIXPACK">SIXPACK</option>
+                                    <option value="CJ">CAJA</option>
+                                    <option value="BOLSA">BOLSA</option>
                                 </select>
                             </div>
                         </div>
