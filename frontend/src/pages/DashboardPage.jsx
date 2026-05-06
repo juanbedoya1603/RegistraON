@@ -12,6 +12,7 @@ const DashboardPage = ({ cedula, userName, setCedula, setView, showToast }) => {
     const [showModal, setShowModal] = useState(false);
     const [history, setHistory] = useState([]);
     const [userTime, setUserTime] = useState(0);
+    const [dailyCount, setDailyCount] = useState(0);
     const [ranking, setRanking] = useState([]);
     const [brandList, setBrandList] = useState([]);
     const [productList, setProductList] = useState([]);
@@ -125,6 +126,7 @@ const DashboardPage = ({ cedula, userName, setCedula, setView, showToast }) => {
             ]);
             setRanking(rankingData);
             setUserTime(statsData.saldo);
+            setDailyCount(statsData.dailyCount || 0);
             setHistory(statsData.history);
         } catch (e) {
             console.error("Error al refrescar datos:", e);
@@ -149,6 +151,7 @@ const DashboardPage = ({ cedula, userName, setCedula, setView, showToast }) => {
 
                 setRanking(rankingData);
                 setUserTime(statsData.saldo);
+                setDailyCount(statsData.dailyCount || 0);
                 setHistory(statsData.history);
                 setBrandList(brandsData.brands || []);
                 setProductList(productsData.products || []);
@@ -190,10 +193,17 @@ const DashboardPage = ({ cedula, userName, setCedula, setView, showToast }) => {
                     handleScan={handleScan} 
                     isValidating={isValidating} 
                     scannerRef={scannerRef} 
+                    dailyCount={dailyCount}
                 />
 
                 <RecentActivity history={history} />
                 
+                {/* CREDITOS FOOTER */}
+                <div className="absolute bottom-1 right-2 lg:bottom-2 lg:right-4 pointer-events-none z-20">
+                    <p className="text-[7px] lg:text-[9px] text-[#5a5e62] font-bold uppercase tracking-[0.2em] opacity-40">
+                        Created by the BI Team, Juan Jose B.
+                    </p>
+                </div>
             </main>
 
             <Sidebar 

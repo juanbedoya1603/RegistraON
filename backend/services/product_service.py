@@ -32,6 +32,14 @@ NO_MEASURE_PRODUCTS = [
 ]
 
 def process_and_save_product(cursor, product: ProductSaveRequest):
+    # REGLA DE NEGOCIO: Límite diario de 5 productos por operario
+    daily_count = product_repository.get_daily_registration_count(cursor, product.numDocument)
+    if daily_count >= 5:
+        raise HTTPException(
+            status_code=403, 
+            detail="LÍMITE DIARIO ALCANZADO: Ya has registrado el máximo de 5 productos por hoy."
+        )
+
     # Regla 3: Convertir todos los campos a MAYÚSCULAS
     product_data = {
         "ean": product.ean.upper(),

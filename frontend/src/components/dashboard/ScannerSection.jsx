@@ -1,7 +1,9 @@
 import React from 'react';
 import { Scan, Keyboard, Barcode } from 'lucide-react';
 
-const ScannerSection = ({ ean, setEan, handleScan, isValidating, scannerRef }) => {
+const ScannerSection = ({ ean, setEan, handleScan, isValidating, scannerRef, dailyCount }) => {
+    const isLimitReached = dailyCount >= 5;
+
     return (
         <div className="flex-1 flex flex-col items-center justify-center p-4 lg:p-6 z-10 min-h-[40dvh] lg:min-h-0">
             <div className="w-full max-w-xl text-center">
@@ -33,9 +35,9 @@ const ScannerSection = ({ ean, setEan, handleScan, isValidating, scannerRef }) =
                         </div>
                         <input
                             ref={scannerRef} type="tel" value={ean} onChange={(e) => setEan(e.target.value)}
-                            placeholder={isValidating ? "Validando..." : "Ej: 770123456789"} autoComplete="off"
-                            disabled={isValidating}
-                            className="relative w-full bg-[#050505] border-2 border-[#4a4948] rounded-xl pl-12 lg:pl-16 pr-16 lg:pr-24 py-3 lg:py-4 text-left text-xl lg:text-2xl font-mono text-white placeholder-[#5a5e62]/40 focus:outline-none focus:border-[#42a636] shadow-[inset_0_2px_15px_rgba(0,0,0,0.8)] transition-all disabled:opacity-50"
+                            placeholder={isValidating ? "Validando..." : isLimitReached ? "Límite alcanzado (5/5)" : "Ej: 770123456789"} autoComplete="off"
+                            disabled={isValidating || isLimitReached}
+                            className={`relative w-full bg-[#050505] border-2 border-[#4a4948] rounded-xl pl-12 lg:pl-16 pr-16 lg:pr-24 py-3 lg:py-4 text-left text-xl lg:text-2xl font-mono text-white placeholder-[#5a5e62]/40 focus:outline-none focus:border-[#42a636] shadow-[inset_0_2px_15px_rgba(0,0,0,0.8)] transition-all disabled:opacity-50 ${isLimitReached ? 'border-red-500/50 text-red-400 cursor-not-allowed' : ''}`}
                         />
                         {isValidating ? (
                             <div className="absolute right-4 lg:right-6">

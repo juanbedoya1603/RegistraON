@@ -101,3 +101,15 @@ def get_base_products(cursor):
     query = "SELECT DISTINCT nmProduct FROM TryTiendas.FixProducts WHERE nmProduct IS NOT NULL ORDER BY nmProduct ASC"
     cursor.execute(query)
     return [row[0] for row in cursor.fetchall() if row[0]]
+
+def get_daily_registration_count(cursor, cedula: str) -> int:
+    query = """
+    SELECT COUNT(*) 
+    FROM rpe.Products 
+    WHERE numDocument = ? 
+      -- Se le restan 5 horas a la fecha de creación y al GETDATE() para igualarlos a la hora local (Colombia)
+      AND CAST(DATEADD(hour, -5, createdAt) AS DATE) = CAST(DATEADD(hour, -5, GETDATE()) AS DATE)
+    """
+    cursor.execute(query, (cedula,))
+    row = cursor.fetchone()
+    return int(row[0]) if row else 0

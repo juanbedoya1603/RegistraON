@@ -89,6 +89,9 @@ async def get_user_stats(
     # 2. Actividad Reciente
     rows_history = product_repository.get_user_recent_history(cursor, cedula)
     
+    # 3. Conteo Diario (NUEVO)
+    daily_count = product_repository.get_daily_registration_count(cursor, cedula)
+    
     history = []
     for row in rows_history:
         history.append({
@@ -99,6 +102,7 @@ async def get_user_stats(
         
     return {
         "saldo": saldo,
+        "dailyCount": daily_count,
         "history": history
     }
 
