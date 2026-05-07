@@ -4,8 +4,12 @@ WORKDIR /app
 
 # Instalar dependencias del sistema y driver ODBC 17
 RUN apt-get update && apt-get install -y curl gnupg2 unixodbc-dev apt-transport-https
-RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
-RUN curl https://packages.microsoft.com/config/debian/11/prod.list > /etc/apt/sources.list.d/mssql-release.list
+
+# Añadir la llave de Microsoft y el repositorio (Método moderno sin apt-key para Debian 12)
+RUN curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o /usr/share/keyrings/microsoft-prod.gpg
+RUN curl -fsSL https://packages.microsoft.com/config/debian/12/prod.list > /etc/apt/sources.list.d/mssql-release.list
+
+# Instalar el driver
 RUN apt-get update && ACCEPT_EULA=Y apt-get install -y msodbcsql17
 
 # Instalar dependencias de Python
