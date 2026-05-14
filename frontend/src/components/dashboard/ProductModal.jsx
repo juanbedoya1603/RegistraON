@@ -1,10 +1,37 @@
-import React from 'react';
-import { CheckCircle2, HelpCircle, X, Search, Save } from 'lucide-react';
+import React, { useEffect } from 'react';
+import { CheckCircle2, HelpCircle, X, Search, Save, AlertTriangle } from 'lucide-react';
+
+const getRepeatedWords = (fullName) => {
+    if (!fullName) return [];
+    const words = fullName.toUpperCase().split(/\s+/);
+    const stopWords = ["DE", "LA", "EL", "CON", "SIN", "X"];
+    const filtered = words.filter(word => 
+        word && 
+        !stopWords.includes(word) && 
+        isNaN(word)
+    );
+    
+    const counts = {};
+    const repeated = [];
+    filtered.forEach(word => {
+        counts[word] = (counts[word] || 0) + 1;
+        if (counts[word] === 2) repeated.push(word);
+    });
+    return repeated;
+};
 
 const ProductModal = ({
     showGuide, setShowGuide, setShowModal, ean, form, setForm,
     filteredProducts, brandList, isNoMeasure, generateFullName, handleSave, isLoading
 }) => {
+    useEffect(() => {
+        if (form.unit === 'UND' && Number(form.value) > 1 && form.sales === 'UND') {
+            setForm(prev => ({ ...prev, sales: 'PACK' }));
+        }
+    }, [form.unit, form.value, form.sales, setForm]);
+
+    const isRedundantUnit = form.unit === 'UND' && Number(form.value) > 1;
+
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-[#0a0a0a]/90 backdrop-blur-sm">
             <div className={`bg-[#1a1a1a] border border-[#4a4948] rounded-2xl w-full ${showGuide ? 'max-w-5xl' : 'max-w-3xl'} overflow-hidden shadow-2xl flex flex-col max-h-[95vh] lg:max-h-[90vh] relative transition-all duration-300`}>
@@ -108,7 +135,7 @@ const ProductModal = ({
                                     value={form.sales} onChange={(e) => setForm({ ...form, sales: e.target.value })}
                                     className="w-full bg-[#1a1a1a] border border-[#4a4948] rounded-md p-2 text-white focus:outline-none focus:border-[#42a636] text-xs font-bold transition-colors cursor-pointer"
                                 >
-                                    <option value="UND">UNIDAD</option>
+                                    {!isRedundantUnit && <option value="UND">UNIDAD</option>}
                                     <option value="PACK">PACK</option>
                                     <option value="SIXPACK">SIXPACK</option>
                                     <option value="CJ">CAJA</option>
@@ -124,6 +151,16 @@ const ProductModal = ({
                                 {generateFullName() || <span className="text-[#5a5e62]/60 italic text-xs lg:text-sm font-sans">El nombre se construirá aquí...</span>}
                             </p>
                         </div>
+
+                        {/* Alerta de Redundancia */}
+                        {getRepeatedWords(generateFullName()).length > 0 && (
+                            <div className="mt-3 bg-orange-500/10 border border-orange-500/50 p-3 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-1 duration-200">
+                                <AlertTriangle className="text-orange-400 shrink-0" size={18} />
+                                <p className="text-[10px] lg:text-xs text-orange-400 font-bold uppercase tracking-wide">
+                                    ⚠️ Advertencia: Estás repitiendo la palabra '{getRepeatedWords(generateFullName()).join(", ")}'.
+                                </p>
+                            </div>
+                        )}
                     </div>
 
                     {/* Columna Derecha: Guía Detallada */}
