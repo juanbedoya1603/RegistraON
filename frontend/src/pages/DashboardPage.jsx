@@ -7,6 +7,15 @@ import RecentActivity from '../components/dashboard/RecentActivity';
 import Sidebar from '../components/dashboard/Sidebar';
 import ProductModal from '../components/dashboard/ProductModal';
 
+// Apunta directamente al archivo estático en la carpeta public
+const scanSound = new Audio('/beep.mp3');
+scanSound.volume = 0.5;
+
+const playBeep = () => {
+    scanSound.currentTime = 0; // Reinicia el audio por si escanean muy rápido
+    scanSound.play().catch(err => console.warn("Audio bloqueado:", err));
+};
+
 const DashboardPage = ({ cedula, userName, setCedula, setView, showToast }) => {
     const [ean, setEan] = useState('');
     const [showModal, setShowModal] = useState(false);
@@ -28,33 +37,48 @@ const DashboardPage = ({ cedula, userName, setCedula, setView, showToast }) => {
         if (scannerRef.current) scannerRef.current.focus();
     };
 
-    const handleScan = async (e) => {
-        e.preventDefault();
-        const isValidEan = /^[0-9]{5,14}$/.test(ean);
+    // Reemplaza tu handleScan actual por este:
+const handleScan = async (e, codigoEscaneado = null) => {
+    if (e) e.preventDefault();
+    playBeep();
+    
+    // 1. Tomamos el código de la cámara o del teclado
+    const rawEan = codigoEscaneado || ean; 
+    
+    // 2. Lo convertimos a texto y le quitamos espacios fantasma
+    const eanFinal = String(rawEan).trim(); 
 
-        if (!isValidEan) {
-            showToast('EAN inválido. Use entre 5 y 14 números.', 'error');
-            setEan('');
-            returnFocus();
-            return;
-        }
+    // Opcional: Para ver en la consola de tu PC qué está pasando
+    console.log("Código capturado por el sistema:", eanFinal);
 
-        setIsValidating(true);
-        try {
-            const data = await api.scanEan(ean);
-            if (data.status === "success" || data.message === "EAN libre") {
-                setShowModal(true);
-            } else {
-                showToast(data.message, 'error', 10000);
-                setEan('');
-            }
-        } catch (error) {
-            showToast('Error de conexión con el servidor (Backend caído).', 'error');
+    // 3. Validamos (solo números, entre 5 y 14 dígitos)
+    const isValidEan = /^[0-9]{5,14}$/.test(eanFinal);
+
+    if (!isValidEan) {
+        // AHORA el toast te dirá exactamente QUÉ leyó la cámara
+        showToast(`EAN inválido: "${eanFinal}". Solo números (5-14).`, 'error');
+        setEan('');
+        returnFocus();
+        return;
+    }
+
+    setIsValidating(true);
+    try {
+        const data = await api.scanEan(eanFinal); 
+        
+        if (data.status === "success" || data.message === "EAN libre") {
+            setShowModal(true);
+        } else {
+            showToast(data.message, 'error', 10000);
             setEan('');
-        } finally {
-            setIsValidating(false);
         }
-    };
+    } catch (error) {
+        showToast('Error de conexión con el servidor.', 'error');
+        setEan('');
+    } finally {
+        setIsValidating(false);
+    }
+};
 
     const generateFullName = () => {
         const parts = [];
