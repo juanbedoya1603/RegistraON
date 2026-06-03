@@ -1,3 +1,11 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Escala todo el Dashboard al 80% automáticamente en pantallas de portátiles/PC */
+@media (min-width: 768px) {
+  html {
+    /* 16px * 0.80 = 12.8px. Esto encoge todas las clases de Tailwind un 20% */
+    font-size: 80%; 
+  }
+}
