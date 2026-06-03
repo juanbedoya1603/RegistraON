@@ -9,6 +9,9 @@ app = FastAPI(title="RegistraON API")
 origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+    "https://localhost:5173",
+    "https://172.20.32.1:5173",
+    "https://172.23.16.1:5173",
 ]
 
 app.add_middleware(
