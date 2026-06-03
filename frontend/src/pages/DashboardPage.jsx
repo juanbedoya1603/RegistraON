@@ -37,6 +37,17 @@ const DashboardPage = ({ cedula, userName, setCedula, setView, showToast }) => {
         if (scannerRef.current) scannerRef.current.focus();
     };
 
+    const isValidEanChecksum = (barcode) => {
+        if (barcode.length !== 13 && barcode.length !== 12) return true; 
+        const padBarcode = barcode.padStart(13, '0');
+        let sum = 0;
+        for (let i = 0; i < 12; i++) {
+            sum += parseInt(padBarcode[i]) * (i % 2 === 0 ? 1 : 3);
+        }
+        const checkDigit = (10 - (sum % 10)) % 10;
+        return checkDigit === parseInt(padBarcode[12]);
+    };
+
     // Reemplaza tu handleScan actual por este:
 const handleScan = async (e, codigoEscaneado = null) => {
     if (e) e.preventDefault();
@@ -52,11 +63,11 @@ const handleScan = async (e, codigoEscaneado = null) => {
     console.log("Código capturado por el sistema:", eanFinal);
 
     // 3. Validamos (solo números, entre 5 y 14 dígitos)
-    const isValidEan = /^[0-9]{5,14}$/.test(eanFinal);
+    const isValidLength = /^[0-9]{5,14}$/.test(String(eanFinal).trim());
 
-    if (!isValidEan) {
-        // AHORA el toast te dirá exactamente QUÉ leyó la cámara
-        showToast(`EAN inválido: "${eanFinal}". Solo números (5-14).`, 'error');
+    if (!isValidLength || !isValidEanChecksum(String(eanFinal).trim())) {
+        // AHORA el toast te dirá exactamente QUÉ leyó la cámara o teclado
+        showToast(`CÓDIGO CORRUPTO: "${eanFinal}". Intente escanear de nuevo.`, 'error');
         setEan('');
         returnFocus();
         return;
