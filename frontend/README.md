@@ -1,88 +1,47 @@
-# RegistraON - Frontend App 💻
+# RegistraON - Capa Frontend
 
-Este es el cliente del proyecto **RegistraON**, una SPA (Single Page Application) modular construida con **React**, **Vite** y **TailwindCSS**. Presenta una interfaz de usuario optimizada para la productividad, con diseño responsive y estética cibernética oscura.
+Aplicación de Página Única (SPA) corporativa orientada a la eficiencia operativa, escaneo de inventario y visualización de progreso gamificado.
 
----
+## Stack Tecnológico
 
-## ⚡ Tecnologías Principales
+- Core: `React 19`, `Vite`
+- Estilización: `Tailwind CSS` (`PostCSS`)
+- Componentes e Íconos: `Lucide-React`
+- Escáner: `html5-qrcode` (Cámara de hardware)
 
-- **Biblioteca Principal**: React (v18+)
-- **Herramienta de Construcción**: Vite
-- **Estilos**: TailwindCSS para control del layout y estética moderna.
-- **Iconografía**: Lucide-React
-- **Animaciones**: Tailwind transitions y animaciones custom (como la línea láser de escaneo).
+## Patrones de Interfaz y UX
 
----
+La interfaz prioriza la velocidad de captura en ambientes industriales:
 
-## 📁 Arquitectura Modular de Componentes (`src/`)
+- Soporte Dual de Escaneo: Entrada prioritaria mediante lectores láser (teclado) con opción secundaria de activación de cámara móvil (con algoritmo de estabilización y votación de fotogramas).
+- Autocompletado Optimizado: Las listas desplegables (Marcas, Producto Base) están limitadas computacionalmente a 50 resultados para evitar degradación del Virtual DOM en dispositivos de bajos recursos.
+- Prevención de Errores: Desactivación reactiva de botones y campos durante validaciones asíncronas. Prevención de interferencias del navegador (bloqueo de traducción automática vía metadatos y clases).
 
-Para mantener el código limpio y mantenible (Clean Code), la interfaz del panel se modularizó de la siguiente manera:
+## Estructura de Componentes
 
-```text
-src/
-├── services/
-│   └── api.js                # Métodos de fetch integrados con el backend (login, scan, save, config)
-├── pages/
-│   ├── LoginPage.jsx         # Página de login que maneja ingreso por documento (cédula)
-│   └── DashboardPage.jsx     # Orquestador del panel principal y estados reactivos del operario
-├── components/
-│   ├── Spinner.jsx           # Cargador visual para procesos de espera
-│   └── dashboard/
-│       ├── Header.jsx        # Barra superior con los logotipos, nombre del operario activo y botón del tutorial
-│       ├── ScannerSection.jsx# Área de lectura de código de barras con animación láser activa
-│       ├── Sidebar.jsx       # Panel lateral que aloja el Ranking de ganadores y el saldo acumulado
-│       ├── RecentActivity.jsx# Grilla con los últimos 5 hallazgos registrados por el operario
-│       ├── VideoModal.jsx    # Modal de video instructivo del manual corporativo
-│       └── ProductModal.jsx  # Modal dinámico de creación del producto que integra:
-│           - Autocompletado optimizado para Producto Base y Marcas (límite de 50 elementos para evitar lag en DOM)
-│           - Panel lateral de estandarización expandible dinámicamente
-│           - Validación y desactivación reactiva de Contenido y Unidad si aplica la lista de excepciones (Quality Guard)
+La aplicación mantiene un enrutamiento por estado (SPA pura sin React Router) para minimizar la carga:
+
+- `components/dashboard/CameraScanner.jsx`: Lógica de hardware y buffer anti-reflejos.
+- `components/dashboard/ProductModal.jsx`: Formulario dinámico y motor mnemotécnico en tiempo real.
+- `components/dashboard/ScannerSection.jsx`: Gestor de inputs (láser vs cámara).
+- `components/dashboard/Sidebar.jsx`: Panel de estado y gamificación.
+- `pages/DashboardPage.jsx`: Orquestador principal de flujos.
+- `pages/LoginPage.jsx`: Controlador de acceso.
+- `services/api.js`: Cliente HTTP centralizado (Fetch API).
+
+## Compilación y Despliegue
+
+El entorno de producción se construye en múltiples etapas mediante Docker, delegando el enrutamiento y proxy de la API a Nginx para mitigar bloqueos de CORS.
+
+Para compilar estáticos localmente:
+
+```bash
+npm install
+npm run dev
 ```
 
----
+O para compilar el bundle de producción:
 
-## ⚙️ Configuración y Variables de Entorno
-
-El frontend requiere saber dónde está alojado el servidor backend.
-Crea un archivo `.env` en este directorio con la siguiente variable tomando como referencia `.env.example`:
-
-```env
-VITE_API_URL=http://localhost:8000/api
-```
-
----
-
-## 🚀 Ejecución en Desarrollo (Local)
-
-1. **Instalar Dependencias**:
-   ```bash
-   npm install
-   ```
-
-2. **Ejecutar Servidor Local**:
-   ```bash
-   npm run dev
-   ```
-   El frontend estará disponible en `http://localhost:5173`.
-
----
-
-## 🐳 Construcción para Producción
-
-### Construcción Estática Local:
 ```bash
 npm run build
 ```
-Esto creará la carpeta compilada `/dist` lista para ser servida.
-
-### Producción con Docker:
-El `Dockerfile` del frontend realiza una construcción multi-etapa:
-1. Compila la aplicación usando una imagen ligera de **Node.js**.
-2. Copia los archivos de distribución resultante a una imagen de producción de **Nginx**.
-3. Configura el archivo `nginx.conf` como un proxy inverso para redirigir las peticiones del endpoint `/api` directamente al contenedor backend, evitando problemas de CORS en producción.
-
-Para levantar de manera aislada:
-```bash
-docker build -t registraon-frontend .
-```
-o corre el orquestador principal mediante `docker-compose` en la raíz.
