@@ -103,7 +103,8 @@ const CameraScanner = ({ onDetected, onClose }) => {
     }, []);
 
     return (
-        <div className="w-full flex flex-col items-center animate-fade-in my-2">
+        
+        <div className="w-full flex flex-col items-center animate-fade-in my-2 notranslate">
             
             {/* 4. ANDAMIO CSS: Inyectamos aspect-[4/3] para evitar que colapse a 0px en PC */}
             <div className="relative w-full max-w-[260px] sm:max-w-[300px] md:max-w-[340px] aspect-[4/3] max-h-[280px] md:max-h-[320px] mx-auto rounded-2xl overflow-hidden border-2 border-[#42a636]/80 shadow-[0_0_20px_rgba(66,166,54,0.2)] bg-black">
