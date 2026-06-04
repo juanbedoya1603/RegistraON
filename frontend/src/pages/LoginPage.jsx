@@ -36,11 +36,14 @@ const LoginPage = ({ cedula, setCedula, onLoginSuccess, showToast }) => {
 
             <div className="bg-[#1a1a1a]/80 backdrop-blur-xl p-6 sm:p-8 rounded-3xl border border-[#4a4948]/30 shadow-2xl w-full max-w-[380px] relative z-10">
                 <div className="flex flex-col items-center mb-8">
-                    <div className="text-3xl sm:text-4xl font-black tracking-tighter text-white mb-1">
-                        ON<span className="text-[#42a636]">OFF</span>
-                    </div>
-                    <p className="text-[10px] tracking-[0.2em] text-[#5a5e62] uppercase font-semibold">Tu amigo digital</p>
-                    <div className="h-px w-16 bg-gradient-to-r from-transparent via-[#42a636] to-transparent mt-3"></div>
+                    
+                    <img
+                        src="/logo.png"
+                        alt="Logo Empresa"
+                        className="h-32 w-auto object-contain mb-3 drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]"
+                    />
+
+                    <div className="h-px w-24 bg-gradient-to-r from-transparent via-[#42a636] to-transparent mt-1"></div>
                 </div>
 
                 <form onSubmit={handleLogin} className="space-y-5">
